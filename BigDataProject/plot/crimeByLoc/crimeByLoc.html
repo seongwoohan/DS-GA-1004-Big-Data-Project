@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Borough</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.js"></script>
+    <script src="../script/Chart.PieceLabel.js"></script>
+    <script>
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF'.split('');
+            var color = '#';
+            for (var i = 0; i < 6; i++ ) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function getTargetColor(data){
+            var label = data["label"];
+            var possibility = data["probabiliby"][label];
+            var targetColor = "#";
+            if(label == 'neg'){
+                targetColor += (possibility * 255).toString(8);
+            }else{
+                targetColor += "00";
+            }
+
+            if(label == 'neutral'){
+                targetColor += (possibility * 255).toString(8);
+            }else{
+                targetColor += "00";
+            }
+
+            if(label == 'pos'){
+                targetColor += (possibility * 255).toString(8);
+            }else{
+                targetColor += "00";
+            }
+            return targetColor;
+        }
+        window.onload = function () {
+            var fileInput = document.getElementById('fileInput');
+            var fileDisplayArea = document.getElementById('fileDisplayArea');
+            fileInput.addEventListener('change', function (e) {
+               var file = fileInput.files[0];
+               var reader = new FileReader();
+               var x_label = new Array();
+               var y_label = new Array();
+               var colorArray = new Array();
+               reader.onload = function () {
+                   var lines = reader.result.split('\n');
+                   for(var line=0;line<lines.length-1;line++){
+                       var data = lines[line].split("\t");
+                       var frequent = parseInt(data[1]);
+                       if(frequent<100000){
+                           continue;
+                       }
+                       x_label.push(data[0]);
+                       y_label.push(frequent);
+                       colorArray.push(getRandomColor());
+                   }
+                   //draw image
+                   var ctx = document.getElementById("myBarChart");
+                   var myChart = new Chart(ctx, {
+                       type:'pie',
+                       data:{
+                          labels: x_label,
+                          datasets:[{
+                              label: "borough",
+                              data: y_label,
+                              backgroundColor:colorArray
+
+                          }], borderWidth: 1
+                       },
+                       options:{
+                           responsive: true,
+                           pieceLabel: {
+                                mode: 'percentage',
+                                precision: 2,
+                                fontColor: '#000'
+                          },
+//                            legend: {
+//                                display: false
+//                             }
+                       }
+                   });
+               }
+
+               reader.readAsText(file);
+            });
+
+        }
+    </script>
+</head>
+<body>
+    <div>
+        select a text file: <input type="file" id="fileInput">
+    </div>
+    <div id="fileDisplayArea"></div>
+    <div style="width: 50%;">
+        <canvas id="myBarChart"> </canvas>
+    </div>
+</body>
+</html>

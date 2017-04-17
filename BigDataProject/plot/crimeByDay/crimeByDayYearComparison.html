@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Borough</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.js"></script>
+    <script>
+         function getRandomColor() {
+            var letters = '0123456789ABCDEF'.split('');
+            var color = '#';
+            for (var i = 0; i < 6; i++ ) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+        window.onload = function () {
+            var fileInput = document.getElementById('fileInput');
+            var fileDisplayArea = document.getElementById('fileDisplayArea');
+            fileInput.addEventListener('change', function (e) {
+               var file = fileInput.files[0];
+               var reader = new FileReader();
+               var x_label = [];
+               var y_label = [];
+               reader.onload = function () {
+                   var lines = reader.result.split('\n');
+                    var dataSets = [];
+                    var curYear = 0;
+                   for(var line=0;line<lines.length-1;line++){
+                       var data = lines[line].split("\t");
+                       var dateStr = data[0];
+                       var dateMoment = moment(dateStr, 'YYYYMMDD');
+                       if(!dateMoment.isValid()){
+                           continue;
+                       }
+                       if(dateMoment.year()<2010){
+                           continue;
+                       }
+                        var dateToSave = new Date(2017, dateMoment.month(), dateMoment.date());
+                        if(line == 0){
+
+                           //console.log(dateToSave.toDateString());
+                           x_label.push(dateToSave);
+                            y_label.push(parseInt(data[1]));
+                        }else{
+                                if(curYear !=  dateMoment.year()){
+
+                                    //save
+                                    if(x_label.length ==365){
+                                        console.log("xlabel "+x_label.length);
+                                        console.log("ylabel "+y_label.length);
+                                         dataSets.push({
+                                            labels: x_label.slice(),
+                                            data: y_label.slice(),
+                                            backgroundColor: getRandomColor(),
+                                            fill: false
+                                        });
+                                    }
+                                    x_label = [];
+                                    y_label = [];
+                                }
+                                x_label.push(dateToSave);
+                                y_label.push(parseInt(data[1]));
+                            }
+                            curYear = dateMoment.year();
+                        }
+//                        console.log(dataSets[1]["data"]);
+//                    console.log(dataSets[1]["labels"]);
+                         //draw image
+                   var ctx = document.getElementById("myBarChart");
+                   var myChart = new Chart(ctx, {
+                       type:'line',
+                       data:{
+                          labels: "asdf",
+                           datasets: dataSets,
+                           borderWidth: 1
+                       },
+                       options: {
+                           responsive: true,
+//                           legend: {
+//                                display: false
+//                             }
+                          }
+                   });
+
+               }
+               reader.readAsText(file);
+            });
+
+        }
+
+//         window.onload = function () {
+//             var ctx = document.getElementById("myChart").getContext("2d");
+//             new Chart(ctx, config);
+//         }
+    </script>
+</head>
+<body>
+    <div>
+        select a text file: <input type="file" id="fileInput">
+    </div>
+    <div id="fileDisplayArea"></div>
+    <div style="width: 80%;">
+        <canvas id="myBarChart"> </canvas>
+    </div>
+
+    <div style="width: 50%">
+        <canvas id="myChart"></canvas>
+    </div>
+</body>
+</html>

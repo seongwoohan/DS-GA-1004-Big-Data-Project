@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 90%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="fileInput"></div>
+    <div id="map"></div>
+    <script>
+      var map;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 5,
+          center: {lat: -33.865427, lng: 151.196123},
+          mapTypeId: 'terrain'
+        });
+
+        // Create a <script> tag and set the USGS URL as the source.
+        var script = document.createElement('script');
+
+        // This example uses a local copy of the GeoJSON stored at
+        // http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojsonp
+        script.src = 'https://developers.google.com/maps/documentation/javascript/examples/json/earthquake_GeoJSONP.js';
+        document.getElementsByTagName('head')[0].appendChild(script);
+
+        map.data.setStyle(function(feature) {
+          var magnitude = feature.getProperty('mag');
+          console.log(magnitude);
+          return {
+            icon: getCircle('4.0')
+          };
+        });
+      }
+
+      function getCircle(magnitude) {
+        return {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: 'red',
+          fillOpacity: .2,
+          scale: Math.pow(2, magnitude) / 2,
+          strokeColor: 'white',
+          strokeWeight: .5
+        };
+      }
+
+      function eqfeed_callback(results) {
+        map.data.addGeoJson(results);
+      }
+
+
+
+      //get data
+         window.onload = function () {
+            var fileInput = document.getElementById('fileInput');
+
+            fileInput.addEventListener('change', function (e) {
+               var file = fileInput.files[0];
+               var reader = new FileReader();
+               var x_label = new Array();
+               var y_label = new Array();
+               reader.onload = function () {
+                   var lines = reader.result.split('\n');
+                   for(var line=0;line<lines.length-1;line++){
+                       var data = lines[line].split("\t");
+                       var frequent = parseInt(data[1]);
+                       if(frequent<100000){
+                           continue;
+                       }
+                       x_label.push(data[0]);
+                       y_label.push(frequent);
+                   }
+                   //draw image
+                   var ctx = document.getElementById("myBarChart");
+                   var myChart = new Chart(ctx, {
+                       type:'doughnut',
+                       data:{
+                          labels: x_label,
+                          datasets:[{
+                              label: "borough",
+                              data: y_label,
+                              backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)',
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)'
+                                ]
+
+                          }], borderWidth: 1
+                       },
+                       options:{
+                           responsive: true,
+                           pieceLabel: {
+                                mode: 'percentage',
+                                precision: 2,
+                                fontColor: '#000',
+                          },
+
+                       }
+                   });
+               }
+
+               reader.readAsText(file);
+            });
+
+        }
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEqdV_9xevgFbrob2XL2rMOk0o37-yhwg&callback=initMap">
+    </script>
+  </body>
+</html>

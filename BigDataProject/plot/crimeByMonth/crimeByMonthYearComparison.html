@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Borough</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.js"></script>
+    <script>
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF'.split('');
+            var color = '#';
+            for (var i = 0; i < 6; i++ ) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        window.onload = function () {
+            var fileInput = document.getElementById('fileInput');
+            var fileDisplayArea = document.getElementById('fileDisplayArea');
+            fileInput.addEventListener('change', function (e) {
+               var file = fileInput.files[0];
+               var reader = new FileReader();
+              // var x_label = new Array();//two dimentional array save data in different year
+              //  var x_label =  ["January","February","March","April","May","June","July", "August", "September", "October", "November", "December"];
+               var x_label = [];
+                for(var i=0;i<12;i++){
+                    x_label.push(i+1);
+                }
+
+                var  y_label = []; // two dimensional array
+
+               var curYearValueArray = [];
+               var yearArray = [];
+               var currentYear = 0;
+               reader.onload = function () {
+                   var lines = reader.result.split('\n');
+                   for(var line=0;line<lines.length-1;line++){
+                       var data = lines[line].split("\t");
+                       var dateStr = data[0];
+                       var dateMoment = moment(dateStr, 'YYYYMM');
+                       if(!dateMoment.isValid()){
+                           continue;
+                       }
+                       if(dateMoment.year()<2006){
+                           continue;
+                       }
+                       var dateToSave = new Date(dateMoment.year(), dateMoment.month());
+                       if(line != 0){
+                           if(dateMoment.year()!=currentYear){
+                               //alert(new Array(curYearValueArray));
+                               if(curYearValueArray.length==12){
+
+                                    y_label.push(curYearValueArray.slice());
+                                    yearArray.push(currentYear);
+
+                               }
+                               curYearValueArray = [];
+                           }else{
+
+                           }
+                           curYearValueArray.push(parseInt(data[1]));
+                       }else{
+                           curYearValueArray.push(parseInt(data[1]));
+                       }
+                       currentYear = dateMoment.year();
+                   }
+
+                   //build dataset:
+                   var dataSet = []
+                    for(var i=0;i<y_label.length;i++){
+                       dataSet.push({
+                           label: yearArray[i],
+                           data: y_label[i],
+                           backgroundColor: getRandomColor(),
+                           fill: false
+                       });
+                    }
+                    //alert(dataSet[0]["data"].toString());
+                   console.log(y_label[1]);
+                    alert(y_label);
+                   //draw image
+                   var ctx = document.getElementById("myBarChart");
+                   var myChart = new Chart(ctx, {
+                       type:'line',
+                       data:{
+                          labels: x_label,
+//                          datasets:[{
+//                              label: "borough", //
+//                              data: y_label[1],
+//                              backgroundColor: [
+//                                    'rgba(75, 192, 192, 0.2)',
+//                                    'rgba(153, 102, 255, 0.2)'
+//                                ]
+//
+//                          }], borderWidth: 1
+                           datasets: dataSet,
+                           borderWidth: 1
+                       },
+                       options: {
+                           responsive: true,
+//                           legend: {
+//                                display: false
+//                             }
+                          }
+                   });
+               }
+               reader.readAsText(file);
+            });
+
+        }
+
+    </script>
+</head>
+<body>
+    <div>
+        select a text file: <input type="file" id="fileInput">
+    </div>
+    <div id="fileDisplayArea"></div>
+    <div style="width: 80%;">
+        <canvas id="myBarChart"> </canvas>
+    </div>
+
+    <div style="width: 50%">
+        <canvas id="myChart"></canvas>
+    </div>
+</body>
+</html>
