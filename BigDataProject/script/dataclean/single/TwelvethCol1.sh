@@ -1,0 +1,2 @@
+spark-submit code/dataclean/single/TwelvethCol1.py NYPD_Complaint_Data_Historic.csv TwelvethCol1.txt                                                                                                                      
+hfs -getmerge TwelvethCol1.txt data/TwelvethCol1.txt     

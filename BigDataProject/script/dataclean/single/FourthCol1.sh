@@ -1,0 +1,2 @@
+spark-submit code/dataclean/single/FourthCol1.py NYPD_Complaint_Data_Historic.csv FourthCol1.txt                                                                                  
+hfs -getmerge FourthCol1.txt data/FourthCol1.txt  
